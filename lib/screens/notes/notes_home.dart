@@ -3,7 +3,6 @@ import 'pages_top_bar.dart';
 import 'folders_grid.dart';
 import '../../models/folder_model.dart';
 import '../../repositories/notes_repository.dart';
-import '../../widgets/unified_bottom_bar.dart';
 import 'folder_notes_screen.dart';
 
 class NotesHome extends StatefulWidget {
@@ -147,7 +146,7 @@ class _NotesHomeState extends State<NotesHome> {
       backgroundColor: Colors.white,
       appBar: AppBar(backgroundColor: Colors.white, elevation: 0, centerTitle: true, iconTheme: const IconThemeData(color: Colors.black), title: const Text('Notes', style: TextStyle(color: Colors.black)),),
       body: Column(children: [ PagesTopBar(pages: _pages, onOpenAllPages: _openAllPages), const SizedBox(height: 8), Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: FoldersGrid(folders: _folders, onAddFolder: _addFolderDialog, onOpenFolder: _openFolder, onRenameRequest: _requestRenameFolder, onDeleteRequest: _requestDeleteFolder, ),),), ],),
-      bottomNavigationBar: UnifiedBottomBar(currentIndex: 2, onTap: (i) { switch (i) { case 0: Navigator.pushReplacementNamed(context, '/dashboard'); break; case 1: Navigator.pushNamed(context, '/tasks'); break; case 2: break; case 3: Navigator.pushNamed(context, '/tasks'); break; case 4: Navigator.pushNamed(context, '/settings'); break; } },),
+      
     );
   }
 }

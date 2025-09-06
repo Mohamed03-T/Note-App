@@ -1,0 +1,6 @@
+{
+  // Increase how many folder levels the Dart/Flutter extension will search
+  // for a project. Useful when the workspace root is a parent of the actual
+  // Flutter project folder.
+  "dart.projectSearchDepth": 4
+}

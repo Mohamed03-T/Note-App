@@ -14,19 +14,43 @@ class FoldersGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [...folders, null];
+    return LayoutBuilder(builder: (context, constraints) {
+      final width = constraints.maxWidth;
+      int crossAxisCount;
+      double childAspect = 1.0;
 
-    return GridView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, childAspectRatio: 1.0, crossAxisSpacing: 12, mainAxisSpacing: 12),
-      itemCount: items.length,
-      itemBuilder: (ctx, i) {
-        final f = items[i];
-        if (f == null) {
-          return AddFolderCard(onTap: onAddFolder);
-        }
-        return FolderCard(folder: f, onTap: () => onOpenFolder(f), onRenameRequest: onRenameRequest, onDeleteRequest: onDeleteRequest,);
-      },
-    );
+      // responsive breakpoints (you can tune these values)
+      // Make 2 columns the default for most device widths.
+      if (width < 360) {
+        crossAxisCount = 1; // very small screens
+        childAspect = 1.2;
+      } else if (width < 1000) {
+        crossAxisCount = 2; // default for phones and small tablets
+        childAspect = 1.05;
+      } else if (width < 1400) {
+        crossAxisCount = 3; // larger tablets / small desktop
+        childAspect = 1.0;
+      } else {
+        crossAxisCount = 4; // wide screens
+        childAspect = 1.0;
+      }
+
+      return GridView.builder(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          childAspectRatio: childAspect,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+        ),
+        itemCount: items.length,
+        itemBuilder: (ctx, i) {
+          final f = items[i];
+          if (f == null) return AddFolderCard(onTap: onAddFolder);
+          return FolderCard(folder: f, onTap: () => onOpenFolder(f), onRenameRequest: onRenameRequest, onDeleteRequest: onDeleteRequest);
+        },
+      );
+    });
   }
 }
 
