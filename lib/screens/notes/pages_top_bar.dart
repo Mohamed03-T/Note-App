@@ -7,8 +7,8 @@ class PagesTopBar extends StatefulWidget {
   final List<PageModel>? pageModels;
   final VoidCallback onOpenAllPages;
   final ValueChanged<int>? onPageSelected;
-
-  const PagesTopBar({super.key, this.pages, this.pageModels, required this.onOpenAllPages, this.onPageSelected}) : assert(pages != null || pageModels != null);
+  final int? selectedIndex;
+  const PagesTopBar({super.key, this.pages, this.pageModels, required this.onOpenAllPages, this.onPageSelected, this.selectedIndex}) : assert(pages != null || pageModels != null);
 
   @override
   State<PagesTopBar> createState() => _PagesTopBarState();
@@ -23,6 +23,10 @@ class _PagesTopBarState extends State<PagesTopBar> {
 
   @override
   Widget build(BuildContext context) {
+    // sync controlled selectedIndex if provided
+    if (widget.selectedIndex != null && widget.selectedIndex != _selected) {
+      _selected = widget.selectedIndex!;
+    }
     final names = widget.pageModels?.map((p) => p.title).toList() ?? widget.pages!;
     // show first 3 and a hidden counter as requested
     final visible = names.take(3).toList();

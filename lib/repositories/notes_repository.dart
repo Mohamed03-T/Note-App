@@ -2,6 +2,7 @@ import '../models/folder_model.dart';
 import '../models/note_model.dart';
 
 class NotesRepository {
+  // Default sample folders (used in Home when not tied to a page)
   List<FolderModel> getDefaultFolders() {
     final now = DateTime.now();
     return [
@@ -10,6 +11,32 @@ class NotesRepository {
       FolderModel(id: 'f3', title: 'Summaries', lastModified: now.subtract(const Duration(days: 5)), notesCount: 7),
       FolderModel(id: 'f4', title: 'Ideas', lastModified: now.subtract(const Duration(days: 10)), notesCount: 2),
     ];
+  }
+
+  // Return folders for a specific page id (simple mock mapping).
+  // If no mapping exists, return an empty list.
+  List<FolderModel> getFoldersForPage(String pageId) {
+    final now = DateTime.now();
+    switch (pageId.toLowerCase()) {
+      case 'study':
+        return [
+          FolderModel(id: '${pageId}_1', title: 'Lectures', lastModified: now.subtract(const Duration(days: 1)), notesCount: 12),
+          FolderModel(id: '${pageId}_2', title: 'Summaries', lastModified: now.subtract(const Duration(days: 3)), notesCount: 5),
+          FolderModel(id: '${pageId}_3', title: 'Projects', lastModified: now.subtract(const Duration(days: 7)), notesCount: 4),
+        ];
+      case 'ideas':
+        return [
+          FolderModel(id: '${pageId}_1', title: 'Product', lastModified: now.subtract(const Duration(days: 2)), notesCount: 3),
+          FolderModel(id: '${pageId}_2', title: 'Design', lastModified: now.subtract(const Duration(days: 10)), notesCount: 1),
+        ];
+      case 'personal':
+        return [
+          FolderModel(id: '${pageId}_1', title: 'Journal', lastModified: now.subtract(const Duration(days: 4)), notesCount: 6),
+        ];
+      default:
+        // By default return an empty list so new pages start empty.
+        return [];
+    }
   }
 
   // Returns a small set of mock notes for a given folder id.

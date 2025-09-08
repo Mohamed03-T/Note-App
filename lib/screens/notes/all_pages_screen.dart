@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reorderables/reorderables.dart';
 import '../../models/page_model.dart';
 import '../../repositories/notes_repository.dart';
 import 'page_folders_screen.dart';
@@ -74,40 +75,40 @@ class _AllPagesScreenState extends State<AllPagesScreen> {
       body: Padding(
         padding: const EdgeInsets.all(12.0),
         child: LayoutBuilder(builder: (context, constraints) {
-          final width = constraints.maxWidth;
-          int crossAxisCount;
-          double childAspect = 1.0;
+          // responsive width available via constraints.maxWidth if needed
 
-          if (width < 360) {
-            crossAxisCount = 1;
-            childAspect = 1.2;
-          } else if (width < 1000) {
-            crossAxisCount = 2;
-            childAspect = 1.05;
-          } else if (width < 1400) {
-            crossAxisCount = 3;
-            childAspect = 1.0;
-          } else {
-            crossAxisCount = 4;
-            childAspect = 1.0;
-          }
+          // build keyed page widgets
+          final pageWidgets = _pages.map((p) => SizedBox(
+            key: ValueKey(p.id),
+            width: 200,
+            height: 220,
+            child: _buildPageCard(p),
+          )).toList();
 
-          final items = [..._pages, null];
+          // children: pages + new page card
+          final children = [...pageWidgets, SizedBox(key: const ValueKey('new_page'), width: 200, height: 220, child: _buildNewPageCard())];
 
-          return GridView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              childAspectRatio: childAspect,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
+          return SingleChildScrollView(
+            child: ReorderableWrap(
+              spacing: 12.0,
+              runSpacing: 12.0,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              needsLongPressDraggable: true,
+              onReorder: (oldIndex, newIndex) {
+                // if reorder attempts involve the new page tile (last index), ignore
+                final lastIndex = children.length - 1;
+                if (oldIndex == lastIndex || newIndex == lastIndex) return;
+
+                setState(() {
+                  final item = _pages.removeAt(oldIndex);
+                  // adjust newIndex because children includes new_page at end
+                  final adjNew = newIndex > oldIndex ? newIndex - 1 : newIndex;
+                  _pages.insert(adjNew, item);
+                });
+                widget.onChanged(_pages);
+              },
+              children: children,
             ),
-            itemCount: items.length,
-            itemBuilder: (ctx, i) {
-              final p = items[i];
-              if (p == null) return _buildNewPageCard();
-              return _buildPageCard(p);
-            },
           );
         }),
       ),
@@ -118,10 +119,14 @@ class _AllPagesScreenState extends State<AllPagesScreen> {
     return PageCard(
       page: p,
       onTap: () {
-  // open the page and show its folders
-  final repo = NotesRepository();
-  final folders = repo.getDefaultFolders();
-  Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => PageFoldersScreen(page: p, folders: folders, onOpenFolder: (f) { Navigator.of(ctx).push(MaterialPageRoute(builder: (_) => Container())); }, onAddFolder: () {}, onRenameRequest: (f) {}, onDeleteRequest: (f) {})));
+        // open the page and show its folders
+        final repo = NotesRepository();
+        final folders = repo.getFoldersForPage(p.title);
+        Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => PageFoldersScreen(pages: widget.pages, activeIndex: widget.pages.indexWhere((x) => x.id == p.id), page: p, folders: folders, onOpenFolder: (f) { Navigator.of(ctx).push(MaterialPageRoute(builder: (_) => Container())); }, onAddFolder: () {}, onRenameRequest: (f) {}, onDeleteRequest: (f) {}, onOpenPageByIndex: (i) {
+              final sel = widget.pages[i];
+              final flds = repo.getFoldersForPage(sel.title);
+              Navigator.of(ctx).pushReplacement(MaterialPageRoute(builder: (_) => PageFoldersScreen(pages: widget.pages, activeIndex: i, page: sel, folders: flds, onOpenFolder: (f) {}, onAddFolder: () {}, onRenameRequest: (f) {}, onDeleteRequest: (f) {}, onOpenPageByIndex: null)));
+        })));
       },
       onRenameRequest: _rename,
       onChangeColorRequest: _changeColor,

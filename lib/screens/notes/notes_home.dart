@@ -23,12 +23,15 @@ class _NotesHomeState extends State<NotesHome> {
   void initState() {
     super.initState();
     _folders = _repo.getDefaultFolders();
-    _pages = ['Study', 'Ideas', 'Notes', 'Archive', 'Personal', 'Drafts']
-        .map((t) => PageModel(id: t, title: t, folderCount: 0))
-        .toList();
+    final names = ['Study', 'Ideas', 'Notes', 'Archive', 'Personal', 'Drafts'];
+    _pages = names.map((t) {
+      final folders = _repo.getFoldersForPage(t);
+      return PageModel(id: t, title: t, folderCount: folders.length);
+    }).toList();
   }
 
   late List<PageModel> _pages;
+  int? _selectedPageIndex;
 
   void _addFolderDialog() {
     final controller = TextEditingController();
@@ -119,9 +122,9 @@ class _NotesHomeState extends State<NotesHome> {
   void _openPageByIndex(int index) {
     if (index < 0 || index >= _pages.length) return;
     final page = _pages[index];
-    final repo = NotesRepository();
-    final folders = repo.getDefaultFolders();
-    Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => PageFoldersScreen(page: page, folders: folders, onOpenFolder: (f) => _openFolder(f), onAddFolder: _addFolderDialog, onRenameRequest: _requestRenameFolder, onDeleteRequest: _requestDeleteFolder)));
+  final repo = NotesRepository();
+  final folders = repo.getFoldersForPage(page.title);
+  Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => PageFoldersScreen(pages: _pages, activeIndex: index, page: page, folders: folders, onOpenFolder: (f) => _openFolder(f), onAddFolder: _addFolderDialog, onRenameRequest: _requestRenameFolder, onDeleteRequest: _requestDeleteFolder)));
   }
 
   @override
@@ -129,8 +132,23 @@ class _NotesHomeState extends State<NotesHome> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(backgroundColor: Colors.white, elevation: 0, centerTitle: true, iconTheme: const IconThemeData(color: Colors.black), title: const Text('Notes', style: TextStyle(color: Colors.black)),),
-  body: Column(children: [ PagesTopBar(pageModels: _pages, onOpenAllPages: _openAllPages, onPageSelected: _openPageByIndex), const SizedBox(height: 8), Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: FoldersGrid(folders: _folders, onAddFolder: _addFolderDialog, onOpenFolder: _openFolder, onRenameRequest: _requestRenameFolder, onDeleteRequest: _requestDeleteFolder, ),),), ],),
+      body: Column(
+        children: [
+          PagesTopBar(pageModels: _pages, onOpenAllPages: _openAllPages, onPageSelected: (i) { setState(() => _selectedPageIndex = i); }, selectedIndex: _selectedPageIndex),
+          const SizedBox(height: 8),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: _selectedPageIndex == null
+                  ? FoldersGrid(folders: _folders, onAddFolder: _addFolderDialog, onOpenFolder: _openFolder, onRenameRequest: _requestRenameFolder, onDeleteRequest: _requestDeleteFolder)
+                  : PageFoldersContent(pages: _pages, activeIndex: _selectedPageIndex!, page: _pages[_selectedPageIndex!], folders: NotesRepository().getFoldersForPage(_pages[_selectedPageIndex!].title), onOpenFolder: _openFolder, onAddFolder: _addFolderDialog, onRenameRequest: _requestRenameFolder, onDeleteRequest: _requestDeleteFolder, onOpenPageByIndex: (i) { setState(() => _selectedPageIndex = i); }),
+            ),
+          ),
+        ],
+      ),
       
     );
   }
+
+// selected page index stored in _selectedPageIndex
 }
