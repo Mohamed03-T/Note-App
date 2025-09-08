@@ -78,15 +78,20 @@ class _AllPagesScreenState extends State<AllPagesScreen> {
           // responsive width available via constraints.maxWidth if needed
 
           // build keyed page widgets
+          final spacing = 12.0;
+          final maxW = constraints.maxWidth;
+          // compute width for ~2 columns on phone; on larger widths more columns will fit naturally
+          final childWidth = (maxW / (maxW < 600 ? 2 : 3)) - spacing - 12;
+
           final pageWidgets = _pages.map((p) => SizedBox(
             key: ValueKey(p.id),
-            width: 200,
+            width: childWidth,
             height: 220,
             child: _buildPageCard(p),
           )).toList();
 
           // children: pages + new page card
-          final children = [...pageWidgets, SizedBox(key: const ValueKey('new_page'), width: 200, height: 220, child: _buildNewPageCard())];
+          final children = [...pageWidgets, SizedBox(key: const ValueKey('new_page'), width: childWidth, height: 220, child: _buildNewPageCard())];
 
           return SingleChildScrollView(
             child: ReorderableWrap(

@@ -30,18 +30,15 @@ class PageFoldersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Standalone full-screen page view includes the top bar here.
     return Scaffold(
       backgroundColor: Colors.white,
-      body: PageFoldersContent(
-        pages: pages,
-        activeIndex: activeIndex,
-        page: page,
-        folders: folders,
-        onOpenFolder: onOpenFolder,
-        onAddFolder: onAddFolder,
-        onRenameRequest: onRenameRequest,
-        onDeleteRequest: onDeleteRequest,
-        onOpenPageByIndex: onOpenPageByIndex,
+      body: Column(
+        children: [
+          PagesTopBar(pageModels: pages, onOpenAllPages: () {}, onPageSelected: (i) { onOpenPageByIndex?.call(i); }, selectedIndex: activeIndex),
+          const SizedBox(height: 8),
+          Expanded(child: PageFoldersContent(pages: pages, activeIndex: activeIndex, page: page, folders: folders, onOpenFolder: onOpenFolder, onAddFolder: onAddFolder, onRenameRequest: onRenameRequest, onDeleteRequest: onDeleteRequest, onOpenPageByIndex: onOpenPageByIndex)),
+        ],
       ),
     );
   }
@@ -73,12 +70,9 @@ class PageFoldersContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        PagesTopBar(pageModels: pages, onOpenAllPages: () {}, onPageSelected: (i) { onOpenPageByIndex?.call(i); }, selectedIndex: activeIndex),
-        const SizedBox(height: 8),
-        Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: FoldersGrid(folders: folders, onAddFolder: onAddFolder, onOpenFolder: onOpenFolder, onRenameRequest: onRenameRequest, onDeleteRequest: onDeleteRequest))),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: FoldersGrid(folders: folders, onAddFolder: onAddFolder, onOpenFolder: onOpenFolder, onRenameRequest: onRenameRequest, onDeleteRequest: onDeleteRequest),
     );
   }
 }
