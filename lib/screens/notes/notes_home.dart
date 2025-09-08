@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'pages_top_bar.dart';
 import 'folders_grid.dart';
 import '../../models/folder_model.dart';
+import '../../models/page_model.dart';
+import 'all_pages_screen.dart';
+import 'page_folders_screen.dart';
 import '../../repositories/notes_repository.dart';
 import 'folder_notes_screen.dart';
 
@@ -20,9 +23,12 @@ class _NotesHomeState extends State<NotesHome> {
   void initState() {
     super.initState();
     _folders = _repo.getDefaultFolders();
+    _pages = ['Study', 'Ideas', 'Notes', 'Archive', 'Personal', 'Drafts']
+        .map((t) => PageModel(id: t, title: t, folderCount: 0))
+        .toList();
   }
 
-  final List<String> _pages = ['Study', 'Ideas', 'Notes', 'Archive', 'Personal', 'Drafts'];
+  late List<PageModel> _pages;
 
   void _addFolderDialog() {
     final controller = TextEditingController();
@@ -104,40 +110,18 @@ class _NotesHomeState extends State<NotesHome> {
     );
   }
 
-  void _openAllPages() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) => FractionallySizedBox(
-        heightFactor: 0.95,
-        child: Scaffold(
-          appBar: AppBar(title: const Text('Pages'), actions: [ TextButton.icon(onPressed: () { Navigator.of(ctx).pop(); _createNewPageDialog(); }, icon: const Icon(Icons.add, color: Colors.white), label: const Text('New Page', style: TextStyle(color: Colors.white))) ]),
-          body: Padding(
-            padding: const EdgeInsets.all(12),
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, childAspectRatio: 3, crossAxisSpacing: 12, mainAxisSpacing: 12),
-              itemCount: _pages.length,
-              itemBuilder: (c, i) => Card(child: InkWell(onTap: () { Navigator.of(ctx).pop(); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Open page: ${_pages[i]}'))); }, child: Padding(padding: const EdgeInsets.all(12.0), child: Row(children: [ const Icon(Icons.description), const SizedBox(width: 12), Expanded(child: Text(_pages[i], style: const TextStyle(fontWeight: FontWeight.w600))), ])))),
-            ),
-          ),
-        ),
-      ),
-    );
+  void _openAllPages() async {
+    await Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => AllPagesScreen(pages: _pages, onChanged: (p) { setState(() => _pages = p); })));
   }
 
-  void _createNewPageDialog() {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Create page'),
-        content: TextField(controller: controller, decoration: const InputDecoration(hintText: 'Page name')),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () { final title = controller.text.trim(); if (title.isNotEmpty) { setState(() => _pages.insert(0, title)); } Navigator.of(ctx).pop(); }, child: const Text('Create')),
-        ],
-      ),
-    );
+
+
+  void _openPageByIndex(int index) {
+    if (index < 0 || index >= _pages.length) return;
+    final page = _pages[index];
+    final repo = NotesRepository();
+    final folders = repo.getDefaultFolders();
+    Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => PageFoldersScreen(page: page, folders: folders, onOpenFolder: (f) => _openFolder(f), onAddFolder: _addFolderDialog, onRenameRequest: _requestRenameFolder, onDeleteRequest: _requestDeleteFolder)));
   }
 
   @override
@@ -145,7 +129,7 @@ class _NotesHomeState extends State<NotesHome> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(backgroundColor: Colors.white, elevation: 0, centerTitle: true, iconTheme: const IconThemeData(color: Colors.black), title: const Text('Notes', style: TextStyle(color: Colors.black)),),
-      body: Column(children: [ PagesTopBar(pages: _pages, onOpenAllPages: _openAllPages), const SizedBox(height: 8), Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: FoldersGrid(folders: _folders, onAddFolder: _addFolderDialog, onOpenFolder: _openFolder, onRenameRequest: _requestRenameFolder, onDeleteRequest: _requestDeleteFolder, ),),), ],),
+  body: Column(children: [ PagesTopBar(pageModels: _pages, onOpenAllPages: _openAllPages, onPageSelected: _openPageByIndex), const SizedBox(height: 8), Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: FoldersGrid(folders: _folders, onAddFolder: _addFolderDialog, onOpenFolder: _openFolder, onRenameRequest: _requestRenameFolder, onDeleteRequest: _requestDeleteFolder, ),),), ],),
       
     );
   }

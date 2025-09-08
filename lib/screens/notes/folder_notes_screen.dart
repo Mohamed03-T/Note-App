@@ -87,13 +87,14 @@ class _FolderNotesScreenState extends State<FolderNotesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text('${widget.folder.title} (${_notes.length})', style: const TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.w700)),
+        title: Text('${widget.folder.title} (${_notes.length})', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 20)),
         centerTitle: true,
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Colors.black),
-        elevation: 0,
+        backgroundColor: Colors.blue.shade600,
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 4,
+        shadowColor: Colors.black26,
       ),
   body: Builder(builder: (context) {
         // group notes by date (yyyy-mm-dd)
@@ -125,23 +126,28 @@ class _FolderNotesScreenState extends State<FolderNotesScreen> {
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 520),
                           child: Card(
-                            color: Colors.yellow.shade100,
+                            color: Colors.white,
+                            elevation: 4,
+                            shadowColor: Colors.black12,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     (n.title.trim().isNotEmpty) ? n.title : (n.content.length > 80 ? '${n.content.substring(0, 80)}...' : n.content),
-                                    style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.black, fontSize: 16),
+                                    style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black87, fontSize: 18),
                                   ),
-                                  const SizedBox(height: 6),
+                                  const SizedBox(height: 8),
                                   // show attachments first (image/video/audio) then any text content below
                                   if (n.attachments.isNotEmpty) ...[
-                                    const SizedBox(height: 8),
+                                    const SizedBox(height: 10),
                                     Wrap(
-                                        spacing: 8,
-                                        runSpacing: 8,
+                                        spacing: 10,
+                                        runSpacing: 10,
                                         children: n.attachments.map((a) {
                                           final ext = a.toLowerCase();
                                           if (ext.endsWith('.png') || ext.endsWith('.jpg') || ext.endsWith('.jpeg')) {
@@ -151,7 +157,7 @@ class _FolderNotesScreenState extends State<FolderNotesScreen> {
                                                     child: GestureDetector(
                                                       onTap: () => _showFullScreenImage(a),
                                                       child: ClipRRect(
-                                                        borderRadius: BorderRadius.circular(8),
+                                                        borderRadius: BorderRadius.circular(12),
                                                         child: kIsWeb
                                                             ? Image.network(a, fit: BoxFit.cover, width: 120, height: 80, errorBuilder: (c, e, s) => Container(width: 120, height: 80, color: Colors.grey.shade300))
                                                             : Image.file(File(a), fit: BoxFit.cover, width: 120, height: 80),
@@ -167,11 +173,11 @@ class _FolderNotesScreenState extends State<FolderNotesScreen> {
                                               child: Container(
                                                 width: 220,
                                                 margin: const EdgeInsets.only(top: 8),
-                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                                                decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.grey.shade200),
+                                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                                decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: Colors.blue.shade50),
                                                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                                                  Icon(playing ? Icons.pause : Icons.play_arrow, size: 20),
-                                                  const SizedBox(width: 8),
+                                                  Icon(playing ? Icons.pause : Icons.play_arrow, size: 24, color: Colors.blue),
+                                                  const SizedBox(width: 10),
                                                   Expanded(
                                                     child: Column(
                                                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,7 +185,7 @@ class _FolderNotesScreenState extends State<FolderNotesScreen> {
                                                       children: [
                                                         LinearProgressIndicator(value: prog, backgroundColor: Colors.grey.shade300, color: Colors.blueAccent),
                                                         const SizedBox(height: 6),
-                                                        Text('${_formatDuration((prog * dur).round())} / ${_formatDuration(dur)}', style: const TextStyle(fontSize: 12)),
+                                                        Text('${_formatDuration((prog * dur).round())} / ${_formatDuration(dur)}', style: const TextStyle(fontSize: 12, color: Colors.black54)),
                                                       ],
                                                     ),
                                                   ),
@@ -189,17 +195,17 @@ class _FolderNotesScreenState extends State<FolderNotesScreen> {
                                           }
                                           return Container(
                                             margin: const EdgeInsets.only(top: 8),
-                                            padding: const EdgeInsets.all(8),
-                                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.grey.shade200),
-                                            child: Row(mainAxisSize: MainAxisSize.min, children: const [Icon(Icons.insert_drive_file, size: 20), SizedBox(width: 6), Text('File')]),
+                                            padding: const EdgeInsets.all(10),
+                                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: Colors.grey.shade100),
+                                            child: Row(mainAxisSize: MainAxisSize.min, children: const [Icon(Icons.insert_drive_file, size: 24, color: Colors.grey), SizedBox(width: 8), Text('File', style: TextStyle(color: Colors.black54))]),
                                           );
                                         }).toList(),
                                       )
                                     ],
                                   // then the textual content (below attachments)
                                   if (n.content.trim().isNotEmpty) ...[
-                                    const SizedBox(height: 8),
-                                    Text(n.content, style: const TextStyle(color: Colors.black87)),
+                                    const SizedBox(height: 10),
+                                    Text(n.content, style: const TextStyle(color: Colors.black87, fontSize: 16, height: 1.4)),
                                   ]
                                 ],
                               ),
@@ -223,10 +229,10 @@ class _FolderNotesScreenState extends State<FolderNotesScreen> {
         child: SafeArea(
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              border: Border(top: BorderSide(color: Colors.grey.shade200)),
+              color: Colors.blue.shade50,
+              border: Border(top: BorderSide(color: Colors.blue.shade200, width: 1)),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
@@ -367,11 +373,12 @@ class _FolderNotesScreenState extends State<FolderNotesScreen> {
 
                     Expanded(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: Colors.grey.shade200),
+                          border: Border.all(color: Colors.blue.shade200, width: 1),
+                          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
                         ),
                         child: Row(
                           children: [
@@ -384,7 +391,7 @@ class _FolderNotesScreenState extends State<FolderNotesScreen> {
                                   hintText: 'Write a note...',
                                   border: InputBorder.none,
                                   isDense: true,
-                                  contentPadding: EdgeInsets.symmetric(vertical: 8),
+                                  contentPadding: EdgeInsets.symmetric(vertical: 10),
                                 ),
                                 minLines: 1,
                                 maxLines: 6,
@@ -400,10 +407,10 @@ class _FolderNotesScreenState extends State<FolderNotesScreen> {
                     const SizedBox(width: 8),
                     // send button
                     Container(
-                      decoration: BoxDecoration(color: const Color(0xFFFFD700), borderRadius: BorderRadius.circular(28)),
+                      decoration: BoxDecoration(color: Colors.blue.shade600, borderRadius: BorderRadius.circular(28)),
                       child: IconButton(
                         onPressed: _sendNote,
-                        icon: const Icon(Icons.arrow_upward, color: Colors.black),
+                        icon: const Icon(Icons.send, color: Colors.white),
                         tooltip: 'Send',
                       ),
                     )
@@ -751,7 +758,7 @@ class _DateHeaderDelegate extends SliverPersistentHeaderDelegate {
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     // center the date circle horizontally, draw a horizontal line through center
     return Container(
-      color: Colors.white,
+      color: Colors.grey.shade50,
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: SizedBox(
         height: maxExtent,
@@ -762,7 +769,7 @@ class _DateHeaderDelegate extends SliverPersistentHeaderDelegate {
             Positioned.fill(
               child: Align(
                 alignment: Alignment.center,
-                child: Container(height: 1, color: Colors.grey.shade300),
+                child: Container(height: 1, color: Colors.blue.shade200),
               ),
             ),
 
@@ -773,7 +780,8 @@ class _DateHeaderDelegate extends SliverPersistentHeaderDelegate {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: const Color(0xFFFFD700), width: 2),
+                  border: Border.all(color: Colors.blue.shade600, width: 2),
+                  boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
                 ),
                 // wider than tall -> oval
                 width: 160,
@@ -781,7 +789,7 @@ class _DateHeaderDelegate extends SliverPersistentHeaderDelegate {
                 child: Center(
                   child: Text(
                     _readable(dateKey),
-                    style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w700, fontSize: 14),
+                    style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 14),
                     textAlign: TextAlign.center,
                   ),
                 ),
